@@ -1,0 +1,71 @@
+{
+  "name": "stockpilot",
+  "private": true,
+  "scripts": {
+    "build": "react-router build",
+    "dev": "shopify app dev",
+    "config:link": "shopify app config link",
+    "deploy": "shopify app deploy",
+    "start": "react-router-serve ./build/server/index.js",
+    "setup": "prisma generate && prisma migrate deploy",
+    "shopify": "shopify",
+    "prisma": "prisma",
+    "vite": "vite",
+    "typecheck": "react-router typegen && tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "benchmark": "tsx scripts/benchmark.ts",
+    "demo": "export DATABASE_URL=\"file:$PWD/prisma/demo.sqlite\"; prisma generate && tsx scripts/setup-demo.ts && SHOPIFY_API_KEY=stockpilot-demo SHOPIFY_API_SECRET=local-demo-only SHOPIFY_APP_URL=http://localhost:3000 STOCKPILOT_DEMO=1 react-router dev --host localhost --port 3000 --strictPort"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.0",
+    "@react-router/dev": "7.18.2",
+    "@react-router/node": "7.18.2",
+    "@react-router/serve": "7.18.2",
+    "@shopify/app-bridge-react": "^4.2.4",
+    "@shopify/shopify-app-react-router": "^3.0.1",
+    "@shopify/shopify-app-session-storage-prisma": "^11.0.0",
+    "isbot": "^5.1.31",
+    "prisma": "^6.19.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router": "7.18.2",
+    "vite-tsconfig-paths": "^6.0.4"
+  },
+  "devDependencies": {
+    "@shopify/polaris-types": "1.0.1",
+    "@types/node": "^25.5.2",
+    "@types/react": "^18.3.25",
+    "@types/react-dom": "^18.3.7",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "tsx": "^4.21.0",
+    "@shopify/cli": "^4.0.0"
+  },
+  "workspaces": {
+    "packages": [
+      "extensions/*"
+    ]
+  },
+  "trustedDependencies": [
+    "@shopify/plugin-cloudflare"
+  ],
+  "overrides": {
+    "p-map": "^4.0.0",
+    "qs": "^6.16.0",
+    "@prisma/config": {
+      "deepmerge-ts": "^8.0.2"
+    }
+  },
+  "resolutions": {
+    "qs": "^6.16.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "qs": "^6.16.0"
+    }
+  }
+}
