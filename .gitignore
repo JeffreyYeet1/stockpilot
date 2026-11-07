@@ -1,0 +1,13 @@
+node_modules/
+.react-router/
+build/
+.cache/
+.shopify/
+.shopify.lock
+.DS_Store
+
+.env
+.env.*
+!.env.example
+*.sqlite
+*.sqlite-*
