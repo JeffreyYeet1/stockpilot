@@ -37,7 +37,7 @@ Open [http://localhost:3000/demo](http://localhost:3000/demo). The demo uses 48 
 
 5. Install the app in the development store and open it from Shopify Admin. Compare a variant's location quantities to Shopify, save a SKU rule, then refresh after changing a quantity in the dev store. The first load creates a snapshot automatically. Subsequent visits use the saved snapshot.
 
-Shopify CLI 4.9.5 was used to check scaffolding. Its noninteractive `app init` requires an organization ID or app client ID. This project uses Shopify's official React Router template at commit `81eb98b6ca095eb0b92657f6007939a418f61955`, downloaded directly because a Shopify account and dev store were unavailable. Embedded installation, authenticated queries against a store and webhook delivery remain to be verified in the linked development store. [Official template](https://github.com/Shopify/shopify-app-template-react-router/tree/81eb98b6ca095eb0b92657f6007939a418f61955) · [Shopify CLI app init](https://shopify.dev/docs/api/shopify-cli/app/app-init) · [Shopify configuration](https://shopify.dev/docs/apps/build/cli-for-apps/manage-app-config-files)
+Shopify CLI 4.9.5 was used to check scaffolding. Its noninteractive `app init` requires an organization ID or app client ID. This project uses Shopify's official React Router template at commit `81eb98b6ca095eb0b92657f6007939a418f61955`, downloaded directly because a Shopify account and dev store were unavailable. Embedded installation and stock-change refresh were verified manually on a Shopify dev store. Webhook delivery still needs a live check. [Official template](https://github.com/Shopify/shopify-app-template-react-router/tree/81eb98b6ca095eb0b92657f6007939a418f61955) · [Shopify CLI app init](https://shopify.dev/docs/api/shopify-cli/app/app-init) · [Shopify configuration](https://shopify.dev/docs/apps/build/cli-for-apps/manage-app-config-files)
 
 ### Access scopes
 
@@ -88,7 +88,22 @@ npm run build
 npm audit
 ```
 
-Nine automated tests cover risk and reorder boundary cases, SKU overrides, missing and untracked quantities, all three cursor loops, invalid cursors, SDK throttling, transient and permanent API failures, partial API responses, and a real temporary SQLite database with cold and warm reads, failed refresh preservation, concurrent request coalescing and tenant isolation. Local browser checks exercised manual refresh, location and search filters, SKU rule editing and reset, sorting, pagination, an empty search and a 420-pixel-wide layout.
+Ten automated tests cover risk and reorder boundary cases, SKU overrides, missing and untracked quantities, all three cursor loops, invalid cursors, SDK throttling, transient and permanent API failures, partial API responses, and a real temporary SQLite database with cold and warm reads, failed refresh preservation, concurrent request coalescing and tenant isolation. Local browser checks exercised manual refresh, location and search filters, SKU rule editing and reset, sorting, pagination, an empty search and a 420-pixel-wide layout.
+
+### Automated inventory refresh
+
+**StockPilot CI** runs type checking, the build and the npm test suite on pushes and pull requests. The refresh regression test supplies simulated Shopify GraphQL responses and exercises the same dashboard loader, manual refresh action and SQLite snapshot used by the embedded app. It checks that a warm load still shows 0 available after the upstream quantity changes, then verifies that refresh shows **3 available**, **Low stock**, **risk 60** and **12 suggested**.
+
+### Live Shopify dev-store test
+
+The live test runs the same server-side scenario against real Shopify Admin GraphQL 2026-07 data in a temporary SQLite database. It verifies refresh and calculation at the service layer. The embedded browser and App Bridge login are covered by the manual checks above.
+
+1. In your Shopify organization, create a separate test app and install it only on your development store. Give it `read_products,read_inventory,read_locations,write_inventory` using the Shopify Dev Dashboard. Configure client credentials for the test app. The StockPilot app configuration remains read-only. [Shopify client credentials setup](https://shopify.dev/docs/apps/build/authentication-authorization/client-credentials-grant)
+2. Create a dedicated tracked test variant with SKU `STOCKPILOT-E2E`, activate it at an active test location, and set **Available** to **0**. Use the canonical `myshopify.com` domain and GraphQL IDs for that variant and location.
+3. Set GitHub Actions repository variables `STOCKPILOT_TEST_SHOP`, `STOCKPILOT_TEST_VARIANT_ID` (in the form `gid://shopify/ProductVariant/123`), and `STOCKPILOT_TEST_LOCATION_ID` (in the form `gid://shopify/Location/456`). Add the separate test app's client ID and client secret as Actions secrets named `STOCKPILOT_TEST_CLIENT_ID` and `STOCKPILOT_TEST_CLIENT_SECRET`.
+4. Once the workflow is on the default branch, open **Actions → Shopify dev-store refresh test → Run workflow**. For a local run, supply the same five values as environment variables and run `npm run test:dev-store` after generating the Prisma client.
+
+The script checks the shop's dev-store flag and fixture SKU before writing. It uses a compare-and-swap adjustment to change 0 to 3 and restores 0 in cleanup. GitHub serializes live workflow runs. If a job is forcibly stopped or Shopify is unavailable during cleanup, verify the fixture is back at 0 before rerunning. [Shopify inventory adjustments](https://shopify.dev/docs/api/admin-graphql/2026-07/mutations/inventoryAdjustQuantities)
 
 ## Dashboard load benchmark
 

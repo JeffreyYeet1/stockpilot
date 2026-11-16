@@ -1,0 +1,27 @@
+name: Shopify dev-store refresh test
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: stockpilot-dev-store-fixture
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run test:dev-store
+        env:
+          STOCKPILOT_TEST_SHOP: ${{ vars.STOCKPILOT_TEST_SHOP }}
+          STOCKPILOT_TEST_VARIANT_ID: ${{ vars.STOCKPILOT_TEST_VARIANT_ID }}
+          STOCKPILOT_TEST_LOCATION_ID: ${{ vars.STOCKPILOT_TEST_LOCATION_ID }}
+          STOCKPILOT_TEST_CLIENT_ID: ${{ secrets.STOCKPILOT_TEST_CLIENT_ID }}
+          STOCKPILOT_TEST_CLIENT_SECRET: ${{ secrets.STOCKPILOT_TEST_CLIENT_SECRET }}
