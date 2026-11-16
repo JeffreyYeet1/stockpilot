@@ -14,7 +14,8 @@
     "typecheck": "react-router typegen && tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
     "benchmark": "tsx scripts/benchmark.ts",
-    "demo": "export DATABASE_URL=\"file:$PWD/prisma/demo.sqlite\"; prisma generate && tsx scripts/setup-demo.ts && SHOPIFY_API_KEY=stockpilot-demo SHOPIFY_API_SECRET=local-demo-only SHOPIFY_APP_URL=http://localhost:3000 STOCKPILOT_DEMO=1 react-router dev --host localhost --port 3000 --strictPort"
+    "demo": "export DATABASE_URL=\"file:$PWD/prisma/demo.sqlite\"; prisma generate && tsx scripts/setup-demo.ts && SHOPIFY_API_KEY=stockpilot-demo SHOPIFY_API_SECRET=local-demo-only SHOPIFY_APP_URL=http://localhost:3000 STOCKPILOT_DEMO=1 react-router dev --host localhost --port 3000 --strictPort",
+    "test:dev-store": "tsx scripts/test-dev-store.ts"
   },
   "type": "module",
   "engines": {
